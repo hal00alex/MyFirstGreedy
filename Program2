@@ -1,0 +1,188 @@
+    public ArrayList<Vertex> dijkstraPathHops(int sourceIndex, int sinkIndex) {
+        /* This method returns a path (shortest in terms of hops) from a source at
+           location sourceIndex and a sink at location sinkIndex using Dijkstra's algorithm.
+           An empty path is returned if Dijkstra's algorithm fails to find a path. */
+        /* The following code is meant to be a placeholder that simply 
+           returns an empty path. Replace it with your own code that 
+           implements Dijkstra's algorithm. */
+    	//any towers in radius 
+    	//result 
+    	ArrayList<Vertex> result = new ArrayList(); 
+    	//System.out.println("Edges are the following: start, end, weight");
+    	//System.out.println("Vertex: " + location);
+    	
+    	//values from relaxing 
+    	ArrayList<Double> relax = new ArrayList(); 
+    	for (int i = 0; i < location.size(); i++){
+    		relax.add(Double.MAX_VALUE); 
+    	}
+    	
+    	//source is 0 
+    	relax.set(sourceIndex, 0.0); 
+    	
+    	if (sourceIndex == 0  && sinkIndex == 13){
+    		int x = 0; 
+    		x = x + 10; 
+    	}
+    	
+    	//em.out.println(sourceIndex + " to " + sinkIndex);
+    	//possible matrix from GPSR 
+    	//make matrix to see what nodes are in radius  
+    	ArrayList<ArrayList<Integer>> matrix = new ArrayList(); 
+    	
+    	//actual path that leads to the value in relax
+    	ArrayList<ArrayList<Integer>> ActualPath = new ArrayList(); 
+    	
+    	for (int a = 0; a < location.size(); a++){
+    		matrix.add(new ArrayList<Integer>()); 
+    		ActualPath.add(new ArrayList<Integer>()); 
+    	}
+    	//System.out.println(location.size());
+    	
+    	for (int i = 0; i <location.size(); i++){
+    		for (int j = 0; j < location.size(); j++){
+    			matrix.get(i).add(j); 
+    			//ActualPath.get(i).add(Integer.MAX_VALUE); 
+    		}
+    	}
+   
+    	//System.out.println("ActualPath: " + ActualPath);
+    	//first index matches to node 
+    	for (int i = 0; i < location.size(); i++){
+    		Vertex tempStartVertex = location.get(i); 
+    		for (int j = 0; j < location.size(); j++){
+    			Vertex tempEndVertex = location.get(j); 
+    			double distance = tempStartVertex.distance(tempEndVertex); 
+    			////System.out.println("Distance between " + tempStartVertex + " and " + tempEndVertex + " is " + distance);
+    			//2 is self 
+    			if (i == j){
+    				matrix.get(i).set(j, 2); 
+    				////System.out.println(matrix);
+    				continue; 
+    			}
+    			
+    			//1 is in radius  
+    			if (distance < transmissionRange){
+    				matrix.get(i).set(j, 1); 
+    			}
+    			
+    			//0 is outside radius 
+    			if (distance > transmissionRange){
+    				matrix.get(i).set(j, 0); 
+    			} 
+    		}
+    		////System.out.println(matrix);
+    	}
+    	
+		////System.out.println("Matrix: " + matrix);
+    	//weight matrix 
+    	ArrayList<ArrayList<Double>> paths = new ArrayList(); 
+    	for (int a = 0; a < location.size(); a++){
+    		paths.add(new ArrayList<Double>()); 
+    	}    	
+    	for (int i = 0; i <location.size(); i++){
+    		for (int j = 0; j < location.size(); j++){
+    			
+    			//-1 if no path 
+    			if (i != j){
+    				paths.get(i).add(-1.0); 
+    			}
+    			//0 if self 
+    	    	//make distance from source to source 0: dist[s] = 0
+    			else{
+    				paths.get(i).add(0.0); 
+    			}
+    		}
+    	}
+    	    	
+
+    	for (int b = 0; b < edges.size(); b++){
+    		//go through edges 
+    		//u is start so put in correct row 
+    		//v is end so put in correct column 
+    		//w is what being put in (row, column)
+    		Edge element = edges.get(b);  
+    		////System.out.println("An Edge: " + element);
+    		int row = element.getU(); 
+    		int col = element.getV();
+    		double weight = element.getW(); 
+    		paths.get(row).set(col, 1.0);  
+    		paths.get(col).set(row, 1.0);  
+    	}
+		//System.out.println("Paths :" + paths);
+    	//make array of distances  
+    	ArrayList<Integer> visited = new ArrayList(); 
+    	int u = 0; 
+    	//while some vertices are unmarked 
+    	while (visited.size() != location.size()){
+    		
+    		//node1 is vertex in relax with smallest distance in relax 
+    		double tempMin = Double.MAX_VALUE; 
+    		for (int c = 0; c < location.size(); c++){
+    			//smallest distance in relax 
+    			//this loop is the only thing that changes when I go to hops
+    			if (relax.get(c) <= tempMin && visited.contains(c) == false){
+    				//problem is that there are multiple nodes that contain same value
+    				//list of indexes that have same value
+    				tempMin = relax.get(c); 
+    				u = c; 
+    				
+    			}
+    		} 
+    		visited.add(u); 
+    		
+    		//stopping conditions of problems 
+    		if (u == sinkIndex){
+    			break; 
+    		}
+    		
+    		if(tempMin == Double.MAX_VALUE){
+    			break; 
+    		}
+  
+    		//for node a adj to node1 that wasn't visited
+    		for (int v = 0; v < location.size(); v++){
+    			//nodeZ cannot be in Q 
+    			if (visited.contains(v) == true){
+    				continue; 
+    			}
+    			
+    			//dist[z] = min{dist[w], dist[v]+c(v,w))} 
+    			//add range check!!!!!!!
+    			double distA = relax.get(v); 
+    			////System.out.println("Current Lat: " + distA);
+    			
+    			//current edge
+    			double distB = paths.get(u).get(v) ;
+    			////System.out.println("Looking at edge: " + distB + " between " + node1 + " and "  + a);
+    			
+    			//make sure in range
+    			if (matrix.get(u).get(v) != 1){
+    				//System.out.println(u + " is out of range from " + v); 
+    				continue; 
+    			}
+    			
+    			double alt = relax.get(u) + paths.get(u).get(v); 
+    			//System.out.println(u + " is in range to " + v); 
+    			if (alt < relax.get(v)){
+    				relax.set(v, alt); 
+    				ActualPath.get(v).addAll(ActualPath.get(u)); 
+    				ActualPath.get(v).add(u); 
+    				//System.out.println("Prev and Path: " + ActualPath.get(sinkIndex));
+    			}
+    		}
+    	}
+
+    	for (int h = 0; h < ActualPath.get(sinkIndex).size(); h++){
+    		if (result.contains(location.get(ActualPath.get(sinkIndex).get(h))) == false){
+    			result.add(location.get(ActualPath.get(sinkIndex).get(h)));
+    		}
+    	
+    	}
+    	
+    	if (ActualPath.get(sinkIndex).size() != 0){
+    		result.add(location.get(sinkIndex)); 
+    	}
+    	
+        return result;
+    }
